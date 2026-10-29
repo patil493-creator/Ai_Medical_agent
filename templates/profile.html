@@ -1,0 +1,111 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | MediTrack AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body class="profile-page">
+
+    <main class="profile-container">
+
+        <a href="{{ url_for('home') }}" class="back-dashboard">
+            ← Back to Dashboard
+        </a>
+
+        <section class="profile-hero">
+            <div class="profile-hero-icon">✚</div>
+            <div>
+                <p class="profile-eyebrow">MEDITRACK AI / ACCOUNT</p>
+                <h1>My Profile</h1>
+                <p class="profile-subtitle">
+                    Manage and view your personal account information.
+                </p>
+            </div>
+        </section>
+
+        <section class="profile-card">
+
+            <div class="profile-card-top">
+                <div class="profile-avatar-large">
+                    {{ user_name[:1]|upper if user_name else 'U' }}
+                </div>
+
+                <div class="profile-heading">
+                    <h2>{{ user_name }}</h2>
+                    <p>Personal Account</p>
+                    <span class="account-status">
+                        <span class="status-dot"></span>
+                        Account Active
+                    </span>
+                </div>
+            </div>
+
+            <div class="profile-divider"></div>
+
+            <h3 class="details-heading">Personal Information</h3>
+
+            <div class="profile-details-grid">
+
+                <div class="profile-detail">
+                    <div class="detail-icon">👤</div>
+                    <div>
+                        <span class="detail-label">Full Name</span>
+                        <strong>{{ user_name }}</strong>
+                    </div>
+                </div>
+
+                <div class="profile-detail">
+                    <div class="detail-icon">✉</div>
+                    <div>
+                        <span class="detail-label">Email Address</span>
+                        <strong class="email-value">
+                            {{ user_email or 'Not available' }}
+                        </strong>
+                    </div>
+                </div>
+
+                <div class="profile-detail">
+                    <div class="detail-icon">🛡️</div>
+                    <div>
+                        <span class="detail-label">Account Type</span>
+                        <strong>Personal</strong>
+                    </div>
+                </div>
+
+                <div class="profile-detail">
+                    <div class="detail-icon">💊</div>
+                    <div>
+                        <span class="detail-label">Application</span>
+                        <strong>MediTrack AI</strong>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="profile-note">
+                <span class="note-icon">🔒</span>
+                <div>
+                    <strong>Your account, your information</strong>
+                    <p>Your profile details are displayed here for your reference.</p>
+                </div>
+            </div>
+
+            <a href="{{ url_for('home') }}" class="profile-dashboard-button">
+                ← &nbsp; Back to Dashboard
+            </a>
+
+        </section>
+
+        <footer class="profile-footer">
+            MediTrack AI · Medicine Expiry & Reminder Assistant
+        </footer>
+
+    </main>
+
+</body>
+</html>
