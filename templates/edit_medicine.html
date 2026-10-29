@@ -1,0 +1,591 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Medicine | MediTrack AI</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #087f70;
+            --primary-dark: #06665b;
+            --primary-light: #e8f7f3;
+            --text: #183b36;
+            --muted: #718580;
+            --border: #e1ebe7;
+            --background: #f5f9f8;
+            --white: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Inter', Arial, sans-serif;
+            background: var(--background);
+            color: var(--text);
+        }
+
+        .topbar {
+            height: 76px;
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 7%;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 21px;
+            font-weight: 800;
+            letter-spacing: -0.6px;
+        }
+
+        .brand-icon {
+            width: 43px;
+            height: 43px;
+            border-radius: 13px;
+            display: grid;
+            place-items: center;
+            color: white;
+            background: linear-gradient(135deg, #079b87, #08665e);
+            font-size: 23px;
+        }
+
+        .brand span:last-child {
+            color: var(--primary);
+        }
+
+        .top-label {
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .page {
+            max-width: 1100px;
+            margin: 42px auto;
+            padding: 0 22px 40px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 25px;
+            text-decoration: none;
+            color: var(--muted);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            color: var(--primary);
+        }
+
+        .page-heading {
+            margin-bottom: 27px;
+        }
+
+        .eyebrow {
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-size: 11px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(27px, 4vw, 35px);
+            letter-spacing: -1.2px;
+        }
+
+        .page-heading p {
+            color: var(--muted);
+            line-height: 1.7;
+            font-size: 14px;
+            margin-top: 10px;
+            max-width: 600px;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.55fr) minmax(250px, 0.8fr);
+            gap: 24px;
+            align-items: start;
+        }
+
+        .form-card, .summary-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(22, 66, 56, 0.045);
+        }
+
+        .form-card {
+            padding: 30px;
+        }
+
+        .card-heading {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            padding-bottom: 22px;
+            border-bottom: 1px solid #edf2ef;
+            margin-bottom: 25px;
+        }
+
+        .section-icon {
+            width: 46px;
+            height: 46px;
+            display: grid;
+            place-items: center;
+            border-radius: 13px;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-size: 23px;
+        }
+
+        .card-heading h2 {
+            margin: 0;
+            font-size: 17px;
+        }
+
+        .card-heading p {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 23px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 9px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #284640;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 17px;
+            pointer-events: none;
+        }
+
+        input {
+            display: block;
+            width: 100%;
+            min-height: 51px;
+            padding: 13px 15px 13px 44px;
+            border: 1px solid #dce7e2;
+            border-radius: 11px;
+            background: #fcfefd;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(8, 127, 112, 0.09);
+            background: white;
+        }
+
+        input::placeholder {
+            color: #a1b1ac;
+        }
+
+        .field-hint {
+            margin: 8px 0 0;
+            color: #879791;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        .form-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 30px;
+            padding-top: 22px;
+            border-top: 1px solid #edf2ef;
+        }
+
+        .btn {
+            min-height: 47px;
+            padding: 0 21px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 9px;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-primary {
+            flex: 1;
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 5px 12px rgba(8, 127, 112, 0.15);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: white;
+            border-color: var(--border);
+            color: #52665f;
+        }
+
+        .btn-secondary:hover {
+            background: #f3f8f6;
+        }
+
+        .summary-card {
+            overflow: hidden;
+        }
+
+        .summary-top {
+            padding: 25px;
+            background: linear-gradient(145deg, #087f70, #064f4a);
+            color: white;
+        }
+
+        .summary-label {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #c8f0e6;
+        }
+
+        .summary-top h2 {
+            font-size: 22px;
+            margin: 19px 0 8px;
+            line-height: 1.35;
+        }
+
+        .summary-top p {
+            color: #d4eee8;
+            font-size: 12px;
+            line-height: 1.7;
+            margin: 0;
+        }
+
+        .summary-body {
+            padding: 22px;
+        }
+
+        .summary-body h3 {
+            margin: 0 0 18px;
+            font-size: 14px;
+        }
+
+        .summary-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .summary-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .summary-item-icon {
+            width: 37px;
+            height: 37px;
+            flex-shrink: 0;
+            border-radius: 11px;
+            display: grid;
+            place-items: center;
+            font-size: 17px;
+            background: var(--primary-light);
+        }
+
+        .summary-item strong {
+            display: block;
+            font-size: 12px;
+            margin: 2px 0 5px;
+        }
+
+        .summary-item p {
+            color: var(--muted);
+            font-size: 11px;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .note {
+            margin-top: 18px;
+            padding: 14px;
+            background: #f3f8f6;
+            border: 1px solid #e4efea;
+            border-radius: 12px;
+            color: #61766f;
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+        .note strong {
+            color: var(--text);
+        }
+
+        .footer {
+            text-align: center;
+            color: #91a19b;
+            font-size: 11px;
+            margin-top: 28px;
+        }
+
+        @media (max-width: 760px) {
+            .topbar {
+                height: 68px;
+                padding: 0 20px;
+            }
+
+            .brand {
+                font-size: 18px;
+            }
+
+            .top-label {
+                display: none;
+            }
+
+            .page {
+                margin-top: 27px;
+                padding: 0 15px 30px;
+            }
+
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-card {
+                padding: 22px 18px;
+            }
+
+            .summary-card {
+                order: 2;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn-primary {
+                flex: auto;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-icon">✚</div>
+            <div>MediTrack <span>AI</span></div>
+        </div>
+        <div class="top-label">SMART MEDICINE MANAGEMENT</div>
+    </header>
+
+    <main class="page">
+
+        <a href="{{ url_for('home') }}" class="back-link">
+            ← Back to Dashboard
+        </a>
+
+        <section class="page-heading">
+            <div class="eyebrow">Medicine Inventory</div>
+            <h1>Edit Medicine Details</h1>
+            <p>
+                Keep your medicine inventory accurate and up to date.
+                Update the details below to help monitor stock and expiry dates.
+            </p>
+        </section>
+
+        <div class="content-grid">
+
+            <section class="form-card">
+                <div class="card-heading">
+                    <div class="section-icon">💊</div>
+                    <div>
+                        <h2>Medicine Information</h2>
+                        <p>Update the required fields below.</p>
+                    </div>
+                </div>
+
+                <form
+                    action="{{ url_for('edit_medicine', medicine_id=medicine.id) }}"
+                    method="POST"
+                >
+
+                    <div class="form-group">
+                        <label for="name">Medicine Name</label>
+                        <div class="input-wrap">
+                            <span class="input-icon">💊</span>
+                            <input
+                                type="text"
+                                id="name"
+                                name="name"
+                                value="{{ medicine.name }}"
+                                placeholder="e.g. Paracetamol"
+                                maxlength="120"
+                                required
+                            >
+                        </div>
+                        <p class="field-hint">
+                            Enter the name printed on the medicine package.
+                        </p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="quantity">Available Quantity</label>
+                        <div class="input-wrap">
+                            <span class="input-icon">📦</span>
+                            <input
+                                type="number"
+                                id="quantity"
+                                name="quantity"
+                                min="0"
+                                step="1"
+                                value="{{ medicine.quantity }}"
+                                placeholder="e.g. 20"
+                                required
+                            >
+                        </div>
+                        <p class="field-hint">
+                            Enter the number of tablets, strips, bottles, or units you have.
+                        </p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="expiry_date">Expiry Date</label>
+                        <div class="input-wrap">
+                            <span class="input-icon">📅</span>
+                            <input
+                                type="date"
+                                id="expiry_date"
+                                name="expiry_date"
+                                value="{{ medicine.expiry_date }}"
+                                required
+                            >
+                        </div>
+                        <p class="field-hint">
+                            Check the expiry date on the original packaging.
+                        </p>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            ✓ Save Changes
+                        </button>
+
+                        <a href="{{ url_for('home') }}" class="btn btn-secondary">
+                            Cancel
+                        </a>
+                    </div>
+
+                </form>
+            </section>
+
+            <aside>
+                <section class="summary-card">
+                    <div class="summary-top">
+                        <div class="summary-label">
+                            <span>✦</span> MEDICINE SAFETY
+                        </div>
+                        <h2>Stay ahead of expiry dates.</h2>
+                        <p>
+                            Accurate inventory information helps you identify
+                            medicines that need attention.
+                        </p>
+                    </div>
+
+                    <div class="summary-body">
+                        <h3>Expiry Summary Guide</h3>
+
+                        <div class="summary-item">
+                            <div class="summary-item-icon">🟢</div>
+                            <div>
+                                <strong>More than 30 days left</strong>
+                                <p>Continue monitoring the medicine inventory.</p>
+                            </div>
+                        </div>
+
+                        <div class="summary-item">
+                            <div class="summary-item-icon">🟡</div>
+                            <div>
+                                <strong>Within 30 days</strong>
+                                <p>Review the medicine and plan appropriate action.</p>
+                            </div>
+                        </div>
+
+                        <div class="summary-item">
+                            <div class="summary-item-icon">🔴</div>
+                            <div>
+                                <strong>Already expired</strong>
+                                <p>Do not use. Separate it and follow local disposal guidance.</p>
+                            </div>
+                        </div>
+
+                        <div class="note">
+                            <strong>Important:</strong> This guide is informational.
+                            Always verify expiry information on the packaging.
+                            Do not use expired medicines.
+                        </div>
+                    </div>
+                </section>
+
+                <div class="footer">
+                    MediTrack AI · Smarter Medicine Management
+                </div>
+            </aside>
+
+        </div>
+    </main>
+
+</body>
+</html>
