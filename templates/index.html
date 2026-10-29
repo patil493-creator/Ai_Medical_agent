@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediTrack AI | Medicine Dashboard</title>
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        .ml-badge {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+            background: #e8eaff;
+            color: #5145a8;
+        }
+
+        .ml-badge.safe { background: #dcfce7; color: #166534; }
+        .ml-badge.warning { background: #fff0d9; color: #9a5700; }
+        .ml-badge.danger { background: #fee2e2; color: #b91c1c; }
+
+        .ml-note {
+            margin-top: 12px;
+            padding: 10px 12px;
+            background: #f1f5f9;
+            color: #475569;
+            border-radius: 8px;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        .table-wrap table {
+            min-width: 720px;
+        }
+
+        .ai-answer {
+            margin-top: 16px;
+            padding: 16px;
+            background: #fff;
+            border-radius: 10px;
+            color: #222;
+            overflow-wrap: anywhere;
+            border: 1px solid #dbe5e8;
+        }
+
+        .ai-answer p {
+            white-space: pre-line;
+            line-height: 1.7;
+            margin-top: 5px;
+        }
+
+        .ai-banner {
+            scroll-margin-top: 20px;
+        }
+
+        .ai-banner input:focus,
+        .add-panel input:focus {
+            outline: 2px solid #0d9488;
+            outline-offset: 1px;
+        }
+
+        .ai-submit {
+            padding: 11px 18px;
+            background: #087f73;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .ai-submit:hover {
+            background: #06665d;
+        }
+
+        .ai-result-heading {
+            font-size: 14px;
+            font-weight: 700;
+            margin-top: 12px;
+        }
+
+        .ai-result-heading:first-child {
+            margin-top: 0;
+        }
+
+        .ai-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .ai-form input {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        .ai-form button {
+            align-self: flex-start;
+        }
+
+        .flash-message {
+            padding: 12px 16px;
+            margin: 12px 0;
+            border-radius: 8px;
+        }
+
+        .flash-message.success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .flash-message.error,
+        .flash-message.danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .flash-message.warning {
+            background: #fff0d9;
+            color: #9a5700;
+        }
+
+        .empty-message {
+            padding: 12px;
+            color: #64748b;
+        }
+
+        .ai-answer-text {
+            white-space: pre-line;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 700px) {
+            .welcome {
+                gap: 15px;
+                align-items: flex-start;
+                flex-wrap: wrap;
+            }
+
+            .welcome h1 {
+                font-size: 25px;
+            }
+
+            .ai-banner {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <a href="#dashboard" class="brand">
+            <span class="brand-icon">✚</span>
+            <span>MediTrack <b>AI</b></span>
+        </a>
+
+        <p class="nav-label">WORKSPACE</p>
+
+        <nav>
+            <a class="nav-item active" href="#dashboard">▦ Dashboard</a>
+            <a class="nav-item" href="#medicines">▤ Medicines</a>
+            <a class="nav-item" href="#alerts">◷ Expiry Alerts</a>
+            <a class="nav-item" href="#reminders">♧ Reminders</a>
+            <a class="nav-item" href="#assistant">✧ AI Assistant</a>
+        </nav>
+
+        <p class="nav-label settings-label">PREFERENCES</p>
+
+        <nav>
+            <a class="nav-item" href="{{ url_for('settings') }}">⚙ Settings</a>
+            <a class="nav-item" href="#help">ⓘ Help & Support</a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="support-icon">✚</div>
+            <h3>Stay on track!</h3>
+            <p>Keep your medicines organized and track their expiry dates.</p>
+            <a href="#reminders" class="support-link">View reminders →</a>
+        </div>
+
+
+<a href="{{ url_for('profile') }}" class="profile profile-link">
+    <div class="avatar">
+        {{ session.get('user_name', 'U')[:1]|upper }}
+    </div>
+
+    <div class="profile-info">
+        <strong>{{ session.get('user_name', 'User') }}</strong>
+        <small>View Profile</small>
+    </div>
+</a>
+
+
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content" id="dashboard">
+
+        <!-- TOP BAR -->
+        <header class="topbar">
+            <div class="breadcrumb">Workspace <span>/</span> Dashboard</div>
+
+            <div class="top-actions">
+                <span class="today">Medicine overview</span>
+            </div>
+        </header>
+
+        <!-- WELCOME -->
+        <section class="welcome">
+            <div>
+                <p class="eyebrow">YOUR HEALTH, ORGANIZED</p>
+                <h1>Welcome to MediTrack AI <span>✦</span></h1>
+                <p class="subtitle">
+                    Manage your medicines and monitor expiry dates.
+                </p>
+            </div>
+
+            <a class="primary-button" href="#add-medicine">
+                ＋ Add Medicine
+            </a>
+        </section>
+
+        <!-- FLASH MESSAGES -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                {% if category not in ['agent_question', 'agent_answer'] %}
+                    <div class="flash-message {{ category }}" role="status">
+                        {{ message }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endwith %}
+
+        <!-- DASHBOARD STATISTICS -->
+        <section class="stats-grid">
+
+            <article class="stat-card">
+                <div class="stat-top">
+                    <span class="stat-label">Total Medicines</span>
+                    <span class="stat-icon teal">▤</span>
+                </div>
+
+                <h2>{{ medicines|length }}</h2>
+                <p class="stat-foot">Medicines in your inventory</p>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-top">
+                    <span class="stat-label">Expiring Soon</span>
+                    <span class="stat-icon orange">◷</span>
+                </div>
+
+                <h2>{{ expiring_medicines|length }}</h2>
+                <p class="stat-foot warning-text">
+                    Expiring within 30 days
+                </p>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-top">
+                    <span class="stat-label">Expired Medicines</span>
+                    <span class="stat-icon red">!</span>
+                </div>
+
+                <h2>{{ expired_medicines|length }}</h2>
+                <p class="stat-foot danger-text">Check expired items</p>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-top">
+                    <span class="stat-label">Safe by Expiry Date</span>
+                    <span class="stat-icon purple">✓</span>
+                </div>
+
+                <h2>{{ safe_medicines|default([], true)|length }}</h2>
+                <p class="stat-foot">
+                    More than 30 days until expiry
+                </p>
+            </article>
+
+        </section>
+
+        <!-- INVENTORY AND RIGHT COLUMN -->
+        <section class="content-grid">
+
+            <!-- MEDICINE INVENTORY -->
+            <div class="panel inventory-panel" id="medicines">
+
+                <div class="panel-header">
+                    <div>
+                        <h2>Medicine Inventory</h2>
+                        <p>Manage and track your medicines</p>
+                    </div>
+
+                    <a href="#add-medicine" class="text-link">＋ Add new</a>
+                </div>
+
+                <!-- SEARCH -->
+                <div class="search-row">
+                    <label class="search-box">
+                        <span>⌕</span>
+
+                        <input
+                            id="medicineSearch"
+                            type="search"
+                            placeholder="Search medicines..."
+                            aria-label="Search medicines"
+                        >
+                    </label>
+                </div>
+
+                <!-- MEDICINE TABLE -->
+                <div class="table-wrap">
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>MEDICINE</th>
+                                <th>QUANTITY</th>
+                                <th>EXPIRY DATE</th>
+                                <th>STATUS</th>
+                                <th>ML PREDICTION</th>
+                                <th>ACTION</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="medicineTable">
+
+                            {% for medicine in medicines %}
+                            <tr>
+
+                                <td>
+                                    <div class="medicine-name">
+                                        <span class="pill-icon blue-pill">●</span>
+
+                                        <div>
+                                            <strong>{{ medicine.name }}</strong>
+                                            <small>Medicine</small>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>{{ medicine.quantity }}</td>
+
+                                <td>{{ medicine.expiry_date }}</td>
+
+                                <!-- EXPIRY STATUS -->
+                                <td>
+                                    {% if medicine.status == "Expired" %}
+                                        <span class="status expired">
+                                            Expired
+                                        </span>
+
+                                    {% elif medicine.status == "Expiring Soon" %}
+                                        <span class="status expiring">
+                                            Expiring soon
+                                        </span>
+
+                                    {% elif medicine.status == "Safe" %}
+                                        <span class="status in-stock">
+                                            Safe by date
+                                        </span>
+
+                                    {% else %}
+                                        <span class="status expired">
+                                            Invalid date
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <!-- ML PREDICTION -->
+                                <td>
+                                    {% set prediction = medicine.ml_prediction|default('Model not available', true) %}
+
+                                    {% if prediction == "Expired" %}
+                                        <span class="ml-badge danger">
+                                            {{ prediction }}
+                                        </span>
+
+                                    {% elif prediction in ["Expiring Soon", "Low Stock"] %}
+                                        <span class="ml-badge warning">
+                                            {{ prediction }}
+                                        </span>
+
+                                    {% elif prediction == "Safe" %}
+                                        <span class="ml-badge safe">
+                                            {{ prediction }}
+                                        </span>
+
+                                    {% else %}
+                                        <span class="ml-badge">
+                                            {{ prediction }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <!-- ACTION BUTTONS -->
+                                <td>
+                                    <div style="display:flex; gap:8px; align-items:center;">
+
+                                        <a
+                                            href="{{ url_for('edit_medicine', medicine_id=medicine.id) }}"
+                                            style="padding:7px 12px; background:#e6f0ff; color:#2457b8; border-radius:6px; text-decoration:none; font-size:13px;"
+                                        >
+                                            Edit
+                                        </a>
+
+                                        <form
+                                            action="{{ url_for('delete_medicine', medicine_id=medicine.id) }}"
+                                            method="POST"
+                                            onsubmit="return confirm('Are you sure you want to delete this medicine?');"
+                                        >
+                                            <button type="submit" class="delete-button">
+                                                Delete
+                                            </button>
+                                        </form>
+
+                                    </div>
+                                </td>
+
+                            </tr>
+
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="empty-message">
+                                    No medicines added yet. Add your first medicine below.
+                                </td>
+                            </tr>
+                            {% endfor %}
+
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- ML NOTE -->
+                <p class="ml-note">
+                    <strong>About ML Prediction:</strong>
+                    This is an experimental model based on your training data.
+                    It is not a medical safety assessment. Never use this prediction
+                    to decide whether a medicine is safe to consume.
+                </p>
+
+                <div class="table-footer">
+                    <span>Showing {{ medicines|length }} medicines</span>
+                    <a href="#add-medicine" class="text-link">Add medicine →</a>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN -->
+            <div class="right-column">
+
+                <!-- EXPIRY ALERTS -->
+                <section class="panel alerts-panel" id="alerts">
+
+                    <div class="panel-header">
+                        <div>
+                            <h2>Expiry Alerts</h2>
+                            <p>Medicines that need attention</p>
+                        </div>
+
+                        <span class="alert-total">
+                            {{ expired_medicines|length + expiring_medicines|length }}
+                        </span>
+                    </div>
+
+                    {% for medicine in expired_medicines %}
+                    <div class="alert-item">
+
+                        <span class="alert-symbol red-bg">!</span>
+
+                        <div class="alert-info">
+                            <strong>{{ medicine.name }}</strong>
+                            <small>Expired on {{ medicine.expiry_date }}</small>
+                        </div>
+
+                    </div>
+                    {% endfor %}
+
+                    {% for medicine in expiring_medicines %}
+                    <div class="alert-item">
+
+                        <span class="alert-symbol orange-bg">◷</span>
+
+                        <div class="alert-info">
+                            <strong>{{ medicine.name }}</strong>
+
+                            <small>
+                                Expires {{ medicine.expiry_date }}
+                                · {{ medicine.days_left }} days left
+                            </small>
+                        </div>
+
+                    </div>
+                    {% endfor %}
+
+                    {% if not expired_medicines and not expiring_medicines %}
+                        <p class="empty-message">
+                            No expiry alerts right now.
+                        </p>
+                    {% endif %}
+
+                </section>
+
+                <!-- LOW STOCK ALERTS -->
+                <section class="panel" id="low-stock-alerts">
+
+                    <div class="panel-header">
+                        <h2>Low Stock Alerts</h2>
+                    </div>
+
+                    {% if low_stock_medicines %}
+
+                        <ul>
+                            {% for medicine in low_stock_medicines %}
+                            <li style="margin-bottom:10px;">
+                                ⚠️ {{ medicine.name }} — Only {{ medicine.quantity }} left.
+                            </li>
+                            {% endfor %}
+                        </ul>
+
+                    {% else %}
+                        <p class="empty-message">
+                            ✅ All medicines have sufficient stock.
+                        </p>
+                    {% endif %}
+
+                </section>
+
+                <!-- REMINDERS -->
+                <section class="panel reminders-panel" id="reminders">
+
+                    <div class="panel-header">
+                        <div>
+                            <h2>Medicine Reminders</h2>
+                            <p>Reminder status</p>
+                        </div>
+
+                        <span class="calendar-icon">▦</span>
+                    </div>
+
+                    {% if reminders|default([], true) %}
+
+                        <ul>
+                            {% for reminder in reminders %}
+                            <li style="margin-bottom:10px;">
+                                ◷ {{ reminder }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+
+                    {% else %}
+                        <p class="empty-message">
+                            No reminders to display right now.
+                        </p>
+                    {% endif %}
+
+                </section>
+
+            </div>
+        </section>
+
+        <!-- AI ASSISTANT -->
+        <section class="ai-banner" id="assistant">
+
+            <div class="ai-mark">✧</div>
+
+            <div class="ai-copy">
+
+                <h2>MediTrack AI Assistant</h2>
+
+                <p>
+                    Ask questions about your saved medicines and expiry dates.
+                </p>
+
+                <!-- ASK QUESTION FORM -->
+                <form
+                    class="ai-form"
+                    action="{{ url_for('ask_agent') }}"
+                    method="POST"
+                    style="margin-top:15px;"
+                >
+
+                    <input
+                        type="text"
+                        name="question"
+                        placeholder="e.g. Which medicines are expiring soon?"
+                        aria-label="Ask MediTrack AI a question"
+                        required
+                    >
+
+                    <button type="submit" class="ai-submit">
+                        Ask MediTrack AI
+                    </button>
+
+                </form>
+
+                <!-- FIXED: DISPLAY THE VARIABLE NAMES USED BY app.py -->
+                {% if agent_question|default('', true) and agent_answer|default('', true) %}
+
+                <div class="ai-answer" aria-live="polite">
+
+                    <div class="ai-result-heading">
+                        You asked:
+                    </div>
+
+                    <p class="ai-answer-text">{{ agent_question }}</p>
+
+                    <div class="ai-result-heading">
+                        MediTrack AI response:
+                    </div>
+
+                    <p class="ai-answer-text">{{ agent_answer }}</p>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+        </section>
+
+        <!-- MEDICINE EXPIRY SUMMARY -->
+        <section class="panel" id="expiry-alert-list">
+
+            <div class="panel-header">
+                <h2>Medicine Expiry Summary</h2>
+            </div>
+            <div class="panel-content">
+                <b><i><p>
+                    This summary provides an overview of medicines that are expiring soon or have already expired.
+                </p></i></b>
+                <br>
+            {% if expiry_alerts|default([], true) %}
+
+                <ul>
+                    {% for alert in expiry_alerts %}
+                    <li style="margin-bottom:10px;">
+                        ⚠️ {{ alert }}
+                    </li>
+                    {% endfor %}
+                </ul>
+
+            {% else %}
+                <p>✅ No additional expiry summary available.</p>
+            {% endif %}
+            </div>
+        </section>
+
+        <!-- ADD MEDICINE FORM -->
+        <section class="panel add-panel" id="add-medicine">
+
+            <div class="panel-header">
+                <div class>
+                    <h2>Add a Medicine</h2>
+                    <p>Enter the medicine details below</p>
+                </div>
+
+                <span class="form-tag">MEDICINE ENTRY</span>
+            </div>
+            
+            <form action="{{ url_for('add_medicine') }}" method="POST">
+            <div  class="form-container">
+                <label for="name">Medicine Name</label>
+
+                <input
+                    id="name"
+                    type="text"
+                    name="name"
+                    placeholder="e.g. Paracetamol"
+                    maxlength="100"
+                    required
+                >
+
+                <label for="quantity">Quantity</label>
+
+                <input
+                    id="quantity"
+                    type="number"
+                    name="quantity"
+                    min="0"
+                    step="1"
+                    placeholder="Enter quantity"
+                    required
+                >
+
+                <label for="expiry_date">Expiry Date</label>
+
+                <input
+                    id="expiry_date"
+                    type="date"
+                    name="expiry_date"
+                    required
+                >
+
+                <button type="submit" class="primary-button">
+                    ＋ Save Medicine
+                </button>
+            </div>
+            </form>
+
+        </section>
+
+   <!-- FOOTER -->
+<footer class="app-footer">
+    <div class="footer-brand">
+        <span class="footer-icon">✚</span>
+        <div>
+            <h3>MediTrack <span>AI</span></h3>
+            <p>Your smart companion for medicine management.</p>
+        </div>
+    </div>
+
+    <div class="footer-message">
+        <p>💊 Stay Healthy. Stay Organized.</p>
+        <span>Never miss a medicine. Never miss an expiry date.</span>
+    </div>
+
+    <div class="footer-tags">
+        #MediTrackAI &nbsp; #SmartHealthcare &nbsp; #MedicineReminder
+    </div>
+
+    <div class="footer-bottom">
+        <span>© 2026 MediTrack AI | Made with ♥ for better healthcare</span>
+        <span>Organize Better. Live Healthier. ✨</span>
+    </div>
+</footer>
+    </main>
+</div>
+
+<!-- MEDICINE ALERT POPUP -->
+{% if popup_alerts|default([], true) %}
+
+<div
+    id="medicine-popup"
+    style="
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,0.55);
+        z-index:9999;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        padding:20px;
+    "
+>
+
+    <div
+        style="
+            background:white;
+            color:#222;
+            width:100%;
+            max-width:430px;
+            padding:25px;
+            border-radius:16px;
+            box-shadow:0 10px 35px rgba(0,0,0,0.2);
+            font-family:Inter,Arial,sans-serif;
+            max-height:80vh;
+            overflow-y:auto;
+        "
+    >
+
+        <h2 style="color:#b45309; margin-top:0;">
+            ⚠️ Medicine Alerts
+        </h2>
+
+        <p>Please check these medicines:</p>
+
+        <ul style="padding-left:22px; line-height:1.8;">
+            {% for alert in popup_alerts %}
+            <li>{{ alert }}</li>
+            {% endfor %}
+        </ul>
+
+        <button
+            type="button"
+            onclick="document.getElementById('medicine-popup').remove()"
+            style="
+                background:#087f73;
+                color:white;
+                border:none;
+                padding:12px 22px;
+                border-radius:8px;
+                cursor:pointer;
+                font-weight:bold;
+            "
+        >
+            OK, Got it
+        </button>
+
+    </div>
+</div>
+
+{% endif %}
+
+<!-- MEDICINE SEARCH -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const searchInput = document.getElementById("medicineSearch");
+    const tableBody = document.getElementById("medicineTable");
+
+    if (!searchInput || !tableBody) {
+        return;
+    }
+
+    searchInput.addEventListener("input", function () {
+
+        const searchText = this.value.toLowerCase().trim();
+        const rows = tableBody.querySelectorAll("tr");
+
+        rows.forEach(function (row) {
+
+            const nameElement = row.querySelector(".medicine-name");
+
+            if (nameElement) {
+
+                const medicineName = nameElement.innerText.toLowerCase();
+
+                row.style.display = medicineName.includes(searchText) ? "" : "none";
+
+            }
+
+        });
+
+    });
+
+});
+</script>
+
+</body>
+</html>
