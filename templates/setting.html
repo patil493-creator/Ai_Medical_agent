@@ -1,0 +1,155 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings | MediTrack AI</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='astyle.css') }}">
+    <style>
+        .settings-page {
+            max-width: 650px;
+            margin: 30px auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            color: #24443d;
+        }
+        .settings-card {
+            background: white;
+            border: 1px solid #d8e8e2;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+        }
+        .settings-card h2 {
+            font-size: 17px;
+            margin-top: 0;
+        }
+        .settings-card p {
+            color: #71817b;
+            font-size: 13px;
+        }
+        .settings-card label:not(.toggle) {
+            display: block;
+            margin: 16px 0 7px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .settings-card select,
+        .settings-card input[type="number"] {
+            width: 100%;
+            max-width: 300px;
+            padding: 10px;
+            border: 1px solid #cbded7;
+            border-radius: 7px;
+            box-sizing: border-box;
+        }
+        .toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .toggle input {
+            width: 18px;
+            height: 18px;
+            accent-color: #0f766e;
+        }
+        .save-button {
+            width: 100%;
+            padding: 12px;
+            background: #0f766e;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .back-link {
+            color: #0f766e;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .message {
+            padding: 10px;
+            margin: 12px 0;
+            background: #e0f7e9;
+            border-radius: 7px;
+        }
+    </style>
+</head>
+<body>
+    <main class="settings-page">
+        <a class="back-link" href="{{ url_for('home') }}">
+            ← Back to Dashboard
+        </a>
+
+        <h1>⚙ Settings</h1>
+        <p>Customize your MediTrack AI application.</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="message">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('settings') }}">
+            <section class="settings-card">
+                <h2>🎨 Appearance</h2>
+                <p>Choose your preferred theme.</p>
+                <label for="theme">Application Theme</label>
+                <select id="theme" name="theme">
+                    <option value="light"
+                        {% if settings.theme == 'light' %}selected{% endif %}>
+                        Light Mode
+                    </option>
+                    <option value="dark"
+                        {% if settings.theme == 'dark' %}selected{% endif %}>
+                        Dark Mode
+                    </option>
+                </select>
+            </section>
+
+            <section class="settings-card">
+                <h2>💊 Expiry Notifications</h2>
+                <label class="toggle">
+                    <span>Enable expiry alerts</span>
+                    <input type="checkbox" name="expiry_alerts"
+                        {% if settings.expiry_alerts %}checked{% endif %}>
+                </label>
+
+                <label for="reminder_days">Remind before expiry</label>
+                <select id="reminder_days" name="reminder_days">
+                    {% for day in [1, 3, 7, 15, 30, 60, 90] %}
+                        <option value="{{ day }}"
+                            {% if settings.reminder_days == day %}selected{% endif %}>
+                            {{ day }} day{% if day != 1 %}s{% endif %} before
+                        </option>
+                    {% endfor %}
+                </select>
+            </section>
+
+            <section class="settings-card">
+                <h2>📦 Low Stock Alerts</h2>
+                <label class="toggle">
+                    <span>Enable low-stock alerts</span>
+                    <input type="checkbox" name="low_stock_alerts"
+                        {% if settings.low_stock_alerts %}checked{% endif %}>
+                </label>
+
+                <label for="low_stock_limit">Alert when quantity is at or below</label>
+                <input id="low_stock_limit" name="low_stock_limit"
+                       type="number" min="0" max="100"
+                       value="{{ settings.low_stock_limit }}" required>
+            </section>
+
+            <button type="submit" class="save-button">
+                💾 Save Settings
+            </button>
+        </form>
+    </main>
+</body>
+</html>
