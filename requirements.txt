@@ -3,3 +3,4 @@ Werkzeug
 joblib
 scikit-learn
 gunicorn
+APScheduler
